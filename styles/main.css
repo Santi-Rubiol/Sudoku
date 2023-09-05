@@ -1,3 +1,19 @@
 .tablero{
     background-color: red;
 }
+
+.cuadro{
+    border: 2px solid black;
+}
+
+.celda{
+    height: 4rem;
+    font-size: 30px;
+    text-align: center;
+    color: rgb(94, 94, 94);
+}
+
+.fija{
+    color: black;
+}
+
