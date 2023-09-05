@@ -10,9 +10,11 @@
     height: 4rem;
     font-size: 30px;
     text-align: center;
-    color: rgb(94, 94, 94);
+    color: rgb(155, 155, 155);
 }
-
+.numeroRepetido{
+    color: red;
+}
 .fija{
     color: black;
 }
