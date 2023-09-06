@@ -1,7 +1,8 @@
 const $tablero = document.querySelector(".tablero");
 
-const tableroVirtual = [];
-const tableroVirtual_Cuadros = [];
+const tableroVirtual_filas = [];
+const tableroVirtual_columnas = [];
+const tableroVirtual_cuadros = [];
 
 function inicio() {
   crearTablero();
@@ -21,15 +22,12 @@ function crearTablero() {
       indiceCuadro++;
       for (let i = 0; i < 3; i++) {
         const $fila = document.createElement("div");
-        $fila.className = "row";
+        $fila.className = "row f" + (i + l * 3);
         for (let j = 0; j < 3; j++) {
-          const $celda = document.createElement("input");
+          const $celda = crearCelda();
           $celda.id = "celda-" + (i + l * 3) + "-" + (j + k * 3) + " ";
           $celda.className = "col-4 celda";
-
-          //$celda.value = i + l * 3 + " " + (j + k * 3);
           $celda.value = indiceCuadro;
-
           $fila.appendChild($celda);
         }
         $cuadro.appendChild($fila);
@@ -40,59 +38,92 @@ function crearTablero() {
   }
 }
 
+function crearCelda() {
+  const $celda = document.createElement("input");
+  $celda.type = "number";
+  $celda.max = 9;
+  $celda.min = 1;
+  $celda.maxlength = 1;
+
+  $celda.ondblclick = () => {
+    if (!$celda.classList.contains("fija")) {
+      $celda.value = "";
+    }
+  };
+  $celda.oninput = (e) => {
+    const numValids = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const contenidoCelda = e.target.value;
+    const ultimoCaracter = contenidoCelda.split("")[contenidoCelda.length - 1];
+    let bandera = false
+    if (!numValids.includes(Number(contenidoCelda))) {
+      if (numValids.includes(Number(ultimoCaracter))) {
+        $celda.value = ultimoCaracter;
+        bandera = true
+      } else {
+        $celda.value = "";
+      }
+    } else {
+      bandera = true
+    }
+    if(bandera){
+      verRepetido($celda)
+      comprobarSolucion()
+    }
+  };
+  return $celda;
+}
+
+function posicionCelda($celda) {
+  let fila =
+    $celda.parentNode.className.split("")[
+      $celda.parentNode.className.length - 1
+    ];
+  let columna = $celda.id.split("")[$celda.id.length - 2];
+  let cuadro =
+    $celda.parentNode.parentNode.id.split("")[
+      $celda.parentNode.parentNode.id.length - 1
+    ];
+
+  return [fila, columna, cuadro];
+}
+
+function verRepetido($celda) {
+  const posiciones = posicionCelda($celda);
+  if (
+    recorrerFila(posiciones[0]) ||
+    recorrerColumna(posiciones[1]) ||
+    recorrerCuadro(posiciones[2])
+  ) {
+    $celda.classList.add("numero-repetido");
+  } else {
+    $celda.classList.remove("numero-repetido");
+  }
+}
+
 function recorrerFila(indice) {
-  comprobarRepetidos(tableroVirtual[indice]);
+  return hayRepetidos(tableroVirtual_filas[indice]);
 }
 
 function recorrerColumna(indice) {
-  let lista = [];
-  for (let i = 0; i < 9; i++) {
-    lista.push(tableroVirtual[indice][i]);
-  }
-  comprobarRepetidos(lista);
+  return hayRepetidos(tableroVirtual_columnas[indice]);
 }
 
 function recorrerCuadro(indice) {
-  const $cuadros = document.querySelectorAll(".cuadro");
-  let lista = [];
-  $cuadros.forEach((c) => {
-    if (c.id === "cuadro-" + indice) {
-      const $celdas = c.querySelectorAll(".celda");
-      $celdas.forEach(($cel) => {
-        lista.push($cel.value);
-      });
-    }
-  });
-  return lista;
+  return hayRepetidos(tableroVirtual_cuadros[indice]);
 }
 
-function comprobarRepetidos(lista) {
-  const valoresVistos = {};
-  const valoresRepetidos = [];
-  const elementosRepetidos = [];
-
+function hayRepetidos(lista) {
+  //Comprueba elementos repetidos de una lista
+  const elementosUnicos = new Set();
   for (const elemento of lista) {
-    //elemento.classList.remove("numeroRepetido");
-    if (valoresVistos[elemento.value]) {
-      if (!valoresRepetidos.includes(elemento.value)) {
-        console.log(elemento.value);
-        valoresRepetidos.push(elemento.value);
-        elemento.classList.add("numeroRepetido");
-
-        //elementosRepetidos.push(elemento);
+    if (elemento.value !== "") {
+      if (elementosUnicos.has(elemento.value)) {
+        return true;
       }
-    } else {
-      valoresVistos[elemento.value] = true;
+      elementosUnicos.add(elemento.value);
     }
   }
-
-  if (valoresRepetidos.length > 0) {
-    console.log("Elementos repetidos:", valoresRepetidos.join(", "));
-    return true;
-  } else {
-    console.log("No hay elementos repetidos en la lista.");
-    return false;
-  }
+  return false;
 }
 /* const sudokuResuelto = [
     [5, 3, 4, 6, 7, 8, 9, 1, 2],
@@ -116,7 +147,15 @@ function llenarTableroVirtual() {
         lista.push($cel);
       }
     });
-    tableroVirtual.push(lista);
+    tableroVirtual_filas.push(lista);
+  }
+
+  for (let i = 0; i < 9; i++) {
+    const col = [];
+    for (let j = 0; j < 9; j++) {
+      col.push(tableroVirtual_filas[j][i]);
+    }
+    tableroVirtual_columnas[i] = col;
   }
   let contador = 0;
   for (let i = 0; i < 9; i++) {
@@ -125,7 +164,7 @@ function llenarTableroVirtual() {
       lista.push($celdas[contador]);
       contador++;
     }
-    tableroVirtual_Cuadros.push(lista);
+    tableroVirtual_cuadros.push(lista);
   }
 }
 
@@ -141,20 +180,39 @@ function llenarTablero() {
     [0, 0, 0, 4, 1, 9, 0, 0, 5],
     [0, 0, 0, 0, 8, 0, 0, 7, 9],
   ];
-  
-  for (let i = 0; i < 9; i++) {
-    for(let j=0;j<9;j++){
-      if(sudokuSinResolver[i][j] != 0){
-        tableroVirtual[i][j].value = sudokuSinResolver[i][j]
-        tableroVirtual[i][j].classList.add("fija")
-      }else{
-        tableroVirtual[i][j].value = ""
-      }
 
+  for (let i = 0; i < 9; i++) {
+    for (let j = 0; j < 9; j++) {
+      if (sudokuSinResolver[i][j] != 0) {
+        tableroVirtual_filas[i][j].value = sudokuSinResolver[i][j];
+        tableroVirtual_filas[i][j].classList.add("fija");
+        tableroVirtual_filas[i][j].disabled = true;
+      } else {
+        tableroVirtual_filas[i][j].value = "";
+      }
     }
   }
+}
 
+function limitarCaracteres($celdaActual) {
+  console.log("Entra");
+  if ($celdaActual.value.length > $celdaActual.maxLength) {
+    $celdaActual.value = $celdaActual.value.slice(0, $celdaActual.maxLength);
+  }
+}
+
+function comprobarSolucion(){
+  const $celdas = document.querySelectorAll(".celda");
+  let band = true
+  $celdas.forEach(($celda) => {
+    if($celda.value === "" || $celda.classList.contains("numero-repetido")){
+      band = false
+    }
+  })
+  if(band){
+    $tablero.hidden = true
+    document.querySelector(".lbl-win").hidden = false
+  }
 }
 
 inicio();
-//recorrerFila(3);

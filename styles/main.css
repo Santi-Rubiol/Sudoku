@@ -1,5 +1,5 @@
 .tablero{
-    background-color: red;
+    background-color: rgb(140, 125, 125);
 }
 
 .cuadro{
@@ -10,12 +10,16 @@
     height: 4rem;
     font-size: 30px;
     text-align: center;
-    color: rgb(155, 155, 155);
+    color: rgb(67, 67, 67);
 }
-.numeroRepetido{
+.numero-repetido{
     color: red;
 }
 .fija{
     color: black;
+}
+.lbl-win h1{
+    font-size: 50px;
+    text-align: center;
 }
 
